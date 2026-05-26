@@ -23,10 +23,10 @@ async function init() {
       newOption.textContent = currCode.toUpperCase();
       newOption.value = currCode;
       if (select.name === "from" && currCode === "usd") {
-        newOption.selected = "selected";
+        newOption.selected = true;
       }
       if (select.name === "to" && currCode === "ngn") {
-        newOption.selected = "selected";
+        newOption.selected = true;
       }
       select.append(newOption);
     }
@@ -77,12 +77,14 @@ async function init() {
     button.addEventListener("click", () => {
       Array.from(fromCurr.options).map((option) => {
         if (option.value === pairRateText.dataset.from) {
-          option.selected = "selected";
+          option.selected = true;
+          handleFormInput();
         }
       });
       Array.from(toCurr.options).map((option) => {
         if (option.value === pairRateText.dataset.to) {
-          option.selected = "selected";
+          option.selected = true;
+          handleFormInput();
         }
       });
     });
@@ -201,7 +203,6 @@ function getExchangeRate() {
     );
     return;
   }
-
   const finalAmount = amount.value * rate;
   const singleToCurrency = 1 * getCachedRate(fromCode, toCode);
   const singleFromCurrency = 1 * getCachedRate(toCode, fromCode);
@@ -238,18 +239,20 @@ async function refreshRates() {
 }
 
 Array.from(currencyForm.children).forEach((formElement) => {
-  formElement.addEventListener("change", (e) => {
-    e.preventDefault();
-    localStorage.setItem("currentAmount", amount.value);
-    if (amount.value === "" || amount.value < 1) {
-      amount.value = "1";
-    }
-    handleFormInput();
-
-    localStorage.setItem("fromCurr", fromCurr.value);
-    localStorage.setItem("toCurr", toCurr.value);
-  });
+  formElement.addEventListener("change", handleFormElementsChange);
 });
+
+function handleFormElementsChange(e) {
+  e && e.preventDefault();
+  localStorage.setItem("currentAmount", amount.value);
+  if (amount.value === "" || amount.value < 1) {
+    amount.value = "1";
+  }
+  handleFormInput();
+
+  localStorage.setItem("fromCurr", fromCurr.value);
+  localStorage.setItem("toCurr", toCurr.value);
+}
 
 amount.addEventListener("input", (e) => {
   e.preventDefault();

@@ -1,14 +1,20 @@
+import { countryList } from "./codes.js";
 const apiURL = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies`;
 
-const dropdowns = document.querySelectorAll(".dropdown select");
+const dropdowns = document.querySelectorAll(".currencySelect");
 const fromCurr = document.querySelector(".from select");
 const toCurr = document.querySelector(".to select");
-const msg = document.querySelector(".msg");
+const msgToText = document.querySelector(".msg p.toRate");
+const msgFromText = document.querySelector(".msg p.fromRate");
 let amount = document.querySelector(".amount input");
+const display = document.getElementById("display");
 let currencyData = {};
 const toastBox = document.getElementById("toastBox");
-const spinner = document.querySelector(".refreshRates .fa.fa-arrows-rotate");
-
+const pairButtons = document.querySelectorAll(".pairs .pair-buttons");
+const swapCurrencyButton = document.getElementById("swapCurrency");
+const refreshRatesButton = document.getElementById("refreshRates");
+let success = 0;
+let total = 0;
 async function init() {
   for (const select of dropdowns) {
     for (const currCode in countryList) {
@@ -18,7 +24,8 @@ async function init() {
       newOption.value = currCode;
       if (select.name === "from" && currCode === "usd") {
         newOption.selected = "selected";
-      } else if (select.name === "to" && currCode === "ngn") {
+      }
+      if (select.name === "to" && currCode === "ngn") {
         newOption.selected = "selected";
       }
       select.append(newOption);
@@ -36,18 +43,49 @@ async function init() {
         Date.now() - new Date(currencyData[currCode.toLowerCase()].date) >=
         86400000
       ) {
+        success = 0;
         handleRateExchange(currCode, key);
       }
     } else {
-      spinner.classList.add("fa-spin");
+      refreshRatesButton.children[0].classList.add("rotateLoader");
 
-      spinner.ariaBusy = true;
+      refreshRatesButton.ariaBusy = true;
 
       await handleRateExchange(currCode, key);
-      spinner.classList.remove("fa-spin");
+      refreshRatesButton.children[0].classList.remove("rotateLoader");
 
-      spinner.ariaBusy = false;
+      refreshRatesButton.ariaBusy = false;
     }
+    total++;
+  }
+  success > 0 &&
+    showToast(
+      `${success} ${success > 1 ? "currencies" : "currency"} now available`,
+      "success",
+    );
+
+  document.getElementById("totalCurrencies").textContent = total;
+  for (const button of pairButtons) {
+    const pairRateText = button.querySelector("span");
+    const pairRate = getCachedRate(
+      pairRateText.dataset.from,
+      pairRateText.dataset.to,
+    );
+    if (pairRate) {
+      pairRateText.textContent = `${pairRate.toFixed(2)}`;
+    }
+    button.addEventListener("click", () => {
+      Array.from(fromCurr.options).map((option) => {
+        if (option.value === pairRateText.dataset.from) {
+          option.selected = "selected";
+        }
+      });
+      Array.from(toCurr.options).map((option) => {
+        if (option.value === pairRateText.dataset.to) {
+          option.selected = "selected";
+        }
+      });
+    });
   }
   setLocalStorageItems();
   getExchangeRate();
@@ -80,6 +118,12 @@ async function handleRateExchange(currCode, key) {
     if (data) {
       localStorage.setItem(key, JSON.stringify(data));
       currencyData[currCode.toLowerCase()] = data;
+      success++;
+    } else {
+      showToast(
+        `Failed to get currency data for ${currCode} check your connection and try again`,
+        "error",
+      );
     }
   } catch (err) {
     console.error("Failed to fetch rates for", currCode, err);
@@ -87,12 +131,18 @@ async function handleRateExchange(currCode, key) {
 }
 
 function getAllRates() {
+  success = 0;
   const promises = [];
   for (let currCode in countryList) {
     if (!Object.hasOwn(countryList, currCode)) continue;
     const key = `currency-${currCode}`;
     promises.push(handleRateExchange(currCode, key));
+    success++;
   }
+  showToast(
+    `${success} ${success > 1 ? "currencies" : "currency"} now available`,
+    "success",
+  );
   return Promise.all(promises);
 }
 
@@ -103,17 +153,19 @@ async function fetchRates(currCode) {
       cache: "no-cache",
     });
     if (response.ok && response.status === 200) {
-      showToast("Successfully fetched currency data", "success");
       return await response.json();
     } else {
       showToast(
-        "Fetched Currency data is invalid please refresh for better data",
+        `Problem getting currency ${currCode.toUpperCase()} rates, please retry`,
         "warning",
       );
       return null;
     }
   } catch (error) {
-    showToast("Failed to fetch currency data", "error");
+    showToast(
+      `Failed to get currency data for ${currCode.toUpperCase()} check your connection and try again`,
+      "error",
+    );
     console.error("Fetch error:", error);
     throw new Error(error);
   }
@@ -132,10 +184,10 @@ function getCachedRate(fromCode, toCode) {
   const rates = currencyObj[fromCodeLower];
   if (rates && rates[toCodeLower]) {
     return rates[toCodeLower];
+  } else {
+    console.warn(`No rate found for ${fromCode} to ${toCode}`);
+    return null;
   }
-
-  console.warn(`No rate found for ${fromCode} to ${toCode}`);
-  return null;
 }
 
 function getExchangeRate() {
@@ -151,20 +203,28 @@ function getExchangeRate() {
   }
 
   const finalAmount = amount.value * rate;
-  msg.textContent = `${new Intl.NumberFormat(navigator.language).format(amount.value)} ${fromCode.toUpperCase()} = ${new Intl.NumberFormat(
-    navigator.language,
-    {
-      minimumFractionDigits: 6,
-      maximumFractionDigits: 6,
-    },
-  ).format(finalAmount.toFixed(6))} ${toCode.toUpperCase()}`;
-  msg.classList.remove("error");
+  const singleToCurrency = 1 * getCachedRate(fromCode, toCode);
+  const singleFromCurrency = 1 * getCachedRate(toCode, fromCode);
+  display.innerText = `${formatNumber(finalAmount)}`;
+  msgToText.textContent = `1 ${fromCode.toUpperCase()} = ${singleToCurrency.toFixed(2)} ${toCode.toUpperCase()}`;
+  msgFromText.textContent = `1 ${toCode.toUpperCase()} = ${singleFromCurrency.toFixed(2)} ${fromCode.toUpperCase()}`;
+}
+
+function formatNumber(number) {
+  return new Intl.NumberFormat(navigator.language, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(number);
 }
 
 const currencyForm = document.querySelector("form");
+currencyForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+});
 async function refreshRates() {
-  spinner.classList.add("fa-spin");
-  spinner.ariaBusy = true;
+  success = 0;
+  refreshRatesButton.children[0].classList.add("rotateLoader");
+  refreshRatesButton.ariaBusy = true;
   if (amount.value === "" || amount.value < 1) {
     amount.value = "1";
   }
@@ -172,8 +232,8 @@ async function refreshRates() {
     await getAllRates();
     getExchangeRate();
   } finally {
-    spinner.classList.remove("fa-spin");
-    spinner.ariaBusy = false;
+    refreshRatesButton.children[0].classList.remove("rotateLoader");
+    refreshRatesButton.ariaBusy = false;
   }
 }
 
@@ -216,31 +276,34 @@ function swapCurrencies() {
 }
 
 function showToast(message, id) {
+  toastBox.style.transform = "scaleX(1)";
+
   let toast = document.createElement("div");
   toast.classList.add("toast");
   toast.role = "alert";
   toast.ariaLive = "assertive";
   let messageIcon = document.createElement("span");
-  messageIcon.classList.add("fa");
   let messageText = document.createElement("span");
   messageText.textContent = message;
   if (id === "error") {
     toast.ariaLabel = "error";
     toast.classList.add("error");
-    messageIcon.classList.add("fa-circle-xmark");
+    messageIcon.dataset.lucide = "circle-x";
   } else if (id === "success") {
     toast.ariaLabel = "succes";
     toast.classList.add("success");
-    messageIcon.classList.add("fa-circle-check");
+    messageIcon.dataset.lucide = "circle-check";
   } else if (id === "warning") {
     toast.ariaLabel = "Warning";
     toast.classList.add("invalid");
-    messageIcon.classList.add("fa-circle-exclamation");
+    messageIcon.dataset.lucide = "circle-alert";
   }
   toast.append(messageIcon, messageText);
   toastBox.appendChild(toast);
+  lucide.createIcons();
   setTimeout(() => {
     toast.remove();
+    toastBox.style.transform = "scaleX(0)";
   }, 6000);
 }
 
@@ -254,3 +317,37 @@ window.addEventListener("online", () => {
     "success",
   );
 });
+
+swapCurrencyButton.addEventListener("click", swapCurrencies);
+refreshRatesButton.addEventListener("click", refreshRates);
+
+document.getElementById("themeSwitch")?.addEventListener("click", () => {
+  if (document.body.classList.contains("light")) setTheme("Dark");
+  else if (document.body.classList.contains("dark")) setTheme("Auto");
+  else setTheme("Light");
+});
+
+let themeSetting = localStorage.getItem("themeSetting");
+
+function setTheme(theme) {
+  themeSetting = theme;
+  if (themeSetting === "Dark") {
+    if (document.body.classList.contains("light")) {
+      document.body.classList.replace("light", "dark");
+    } else {
+      document.body.classList.add("dark");
+    }
+  } else if (themeSetting == "Light") {
+    if (document.body.classList.contains("dark")) {
+      document.body.classList.replace("dark", "light");
+    } else {
+      document.body.classList.add("light");
+    }
+  } else if (themeSetting == "Auto") {
+    document.body.classList.remove("light", "dark");
+  }
+
+  localStorage.setItem("themeSetting", themeSetting);
+}
+
+setTheme(themeSetting);

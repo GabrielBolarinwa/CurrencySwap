@@ -1,0 +1,50 @@
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Background -->
+  <rect
+    x="28"
+    y="28"
+    width="456"
+    height="456"
+    rx="96"
+    fill="url(#bgGradient)"
+  />
+
+  <!-- Upward Trend Arrow -->
+  <path
+    d="M165 315L245 235L295 285L385 195"
+    stroke="white"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Arrow Head -->
+  <path
+    d="M330 195H385V250"
+    stroke="white"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient
+      id="bgGradient"
+      x1="28"
+      y1="28"
+      x2="484"
+      y2="484"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#36D1C4" />
+      <stop offset="1" stop-color="#1FB8AA" />
+    </linearGradient>
+  </defs>
+</svg>

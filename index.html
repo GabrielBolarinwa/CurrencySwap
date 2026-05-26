@@ -12,9 +12,33 @@
       name="description"
       content="This is a subset of the Gabriel Bolarinwa Portfolio. This is a currency converter that collects current currency data from a trusted API to give you realtime information"
     />
+    <link
+      href="https://fonts.googleapis.com/css?family=Inter:regular,600,700"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:regular,italic,500,500italic,600,600italic,700,700italic"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0faf99" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="shortcut icon" href="50032.png" type="image/x-icon" />
-    <link rel="stylesheet" href="fontawesome6/pro/css/all.min.css" />
+    <meta property="og:name" content="CurrencySwap" />
+    <meta
+      property="og:description"
+      content="An interactive currency converter application"
+    />
+    <meta
+      property="og:image"
+      content="https://gabrielbolarinwa-devpulse.vercel.app"
+    />
+
+    <meta name="author" content="Bolarinwa Gabriel" />
+    <meta content="CurrencySwap" lang="en" name="application-name" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <meta content="text/html;charset=UTF-8" http-equiv="Content-Type" />
+    <meta content="website" property="og:type" />
+    <link rel="shortcut icon" href="public/favicon.svg" type="image/x-icon" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -24,66 +48,139 @@
         <a href="#">upgrade your browser</a> to improve your experience.
       </p>
     <![endif]-->
+    <header>
+      <div class="brand">
+        <img
+          src="public/currencyswap.webp"
+          alt="Currency Swap Logo"
+          width="50"
+          height="50"
+        />
+        <p>CurrencySwap</p>
+      </div>
+      <div class="header__div">
+        <p>Simple & fast conversions</p>
+        <button class="themeButton" id="themeSwitch">
+          <span data-lucide="sun-moon"></span>
+        </button>
+      </div>
+    </header>
     <main class="container" role="main">
-      <h1>Currency Converter</h1>
-      <form>
+      <section class="hero">
+        <h1>Currency Converter</h1>
+        <p>
+          Convert between <span id="totalCurrencies"></span> world and digital
+          currencies instantly
+        </p>
+      </section>
+      <section class="converter">
         <button
           class="refreshRates"
           title="Refresh Currency Data"
           aria-label="Refresh Currency Data"
           type="button"
-          onclick="refreshRates()"
+          id="refreshRates"
           aria-busy="false"
         >
-          <span class="fa fa-arrows-rotate"></span>
+          <span data-lucide="rotate-cw"></span>
         </button>
-        <div class="amount">
-          <label for="amount">Enter Amount</label>
-          <input
-            type="number"
-            min="1"
-            name="amount"
-            id="amount"
-            value="1"
-            autocomplete="off"
-          />
-        </div>
-        <fieldset>
-          <legend class="offscreen">Select Conversion Currencies</legend>
-          <div class="dropdown">
-            <div class="from">
-              <label for="from" id="fromLabel">From</label>
-              <div class="select-container">
-                <select
-                  name="from"
-                  id="from"
-                  aria-describedby="#fromLabel"
-                ></select>
+        <div class="form_container">
+          <form>
+            <div class="form-section">
+              <p class="field_title">YOU SEND</p>
+              <div>
+                <div class="amount">
+                  <label for="amount" class="offscreen">Enter amount</label>
+                  <input
+                    type="number"
+                    min="1"
+                    name="amount"
+                    id="amount"
+                    value="1"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="from">
+                  <label for="from" class="offscreen" id="fromLabel"
+                    >From</label
+                  >
+                  <select
+                    name="from"
+                    id="from"
+                    class="currencySelect"
+                    aria-describedby="#fromLabel"
+                  ></select>
+                </div>
               </div>
             </div>
-            <button
-              class="swap-btn"
-              title="Swap Currencies"
-              aria-label="Swap Currencies"
-              type="button"
-              onclick="swapCurrencies()"
-            >
-              <span class="fa fa-arrow-right-arrow-left"></span>
-            </button>
-            <div class="to">
-              <label for="to" id="toLabel">To</label>
-              <div class="select-container">
-                <select name="to" id="to" aria-describedby="#toLabel"></select>
+
+            <div class="divider">
+              <hr />
+              <button
+                class="swap-btn"
+                title="Swap Currencies"
+                aria-label="Swap Currencies"
+                type="button"
+                id="swapCurrency"
+              >
+                <span data-lucide="arrow-down-up"></span>
+              </button>
+              <hr />
+            </div>
+            <div>
+              <div class="form-section">
+                <p class="field_title">THEY RECEIVE</p>
+                <div>
+                  <div class="amount">
+                    <output
+                      id="display"
+                      class="displayOutput"
+                      aria-live="polite"
+                      >1000</output
+                    >
+                  </div>
+                  <div class="to">
+                    <label for="to" class="offscreen" id="toLabel">To</label>
+                    <select
+                      name="to"
+                      id="to"
+                      class="currencySelect"
+                      aria-describedby="#toLabel"
+                    ></select>
+                  </div>
+                </div>
               </div>
             </div>
+          </form>
+          <div class="msg" aria-live="polite">
+            <p class="toRate">1 USD = 1000 NGN</p>
+            <p class="fromRate">1 NGN = 0.001USD</p>
           </div>
-        </fieldset>
-      </form>
-      <div class="msg" aria-live="polite"></div>
+        </div>
+        <div class="popular-pairs">
+          <p>Popular Pairs</p>
+          <div class="pairs">
+            <button class="pair-buttons">
+              USD/EUR <span data-from="usd" data-to="eur"></span></button
+            ><button class="pair-buttons">
+              GBP/USD <span data-from="gbp" data-to="usd"></span></button
+            ><button class="pair-buttons">
+              USD/JPY <span data-from="usd" data-to="jpy"></span></button
+            ><button class="pair-buttons">
+              EUR/GBP <span data-from="eur" data-to="gbp"></span>
+            </button>
+          </div>
+        </div>
+      </section>
     </main>
     <div class="toastBox" id="toastBox" aria-live="polite"></div>
-
-    <script src="js/codes.js"></script>
-    <script src="js/script.js" async defer></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js");
+      }
+    </script>
+    <script type="module" src="js/script.js" defer></script>
   </body>
 </html>

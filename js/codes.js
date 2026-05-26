@@ -1,4 +1,4 @@
-const countryList = {
+export const countryList = {
   "1inch": "1inch",
   aave: "Aave",
   ada: "Cardano",

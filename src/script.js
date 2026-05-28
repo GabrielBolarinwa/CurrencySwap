@@ -128,7 +128,9 @@ navigator.onLine
     ? showToast("You are offline and will use cached currency data", "warning")
     : showToast(
         "You are offline and there is no cached data, please connect to the internet to get realtime values",
+        "warning",
       );
+
 async function handleRateExchange(currCode, key) {
   try {
     const data = await fetchRates(currCode.toLowerCase());

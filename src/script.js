@@ -104,8 +104,21 @@ async function init() {
       });
     });
   }
-  setLocalStorageItems();
-  getExchangeRate();
+  await setLocalStorageItems();
+  await getExchangeRate();
+  if (document.readyState === "complete") {
+    document.fonts.ready.then(() => {
+      document.querySelector(".loader-container").style.opacity = "0";
+      document.querySelector(".loader-container").style.visibility = "hidden";
+    });
+  } else {
+    window.addEventListener("load", () => {
+      document.fonts.ready.then(() => {
+        document.querySelector(".loader-container").style.opacity = "0";
+        document.querySelector(".loader-container").style.visibility = "hidden";
+      });
+    });
+  }
 }
 
 function setLocalStorageItems() {

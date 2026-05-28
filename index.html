@@ -50,6 +50,13 @@
         <a href="#">upgrade your browser</a> to improve your experience.
       </p>
     <![endif]-->
+    <div class="loader-container">
+      <div class="loader">
+        <span class="dollar-sign">$</span> <span style="--i: -1">.</span>
+        <span style="--i: 0.2">.</span>
+        <span style="--i: 0.6">.</span>
+      </div>
+    </div>
     <header>
       <div class="brand">
         <img
@@ -176,6 +183,19 @@
       </section>
     </main>
     <div class="toastBox" id="toastBox" aria-live="polite"></div>
+    <script>
+      if (document.readyState === "complete") {
+        document.fonts.ready.then(() => {
+          document.querySelector(".loader-container").style.opacity = "0";
+        });
+      } else {
+        window.addEventListener("load", () => {
+          document.fonts.ready.then(() => {
+            document.querySelector(".loader-container").style.opacity = "0";
+          });
+        });
+      }
+    </script>
     <script type="module" src="/src/script.js" defer></script>
   </body>
 </html>

@@ -20,7 +20,6 @@
       href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:regular,italic,500,500italic,600,600italic,700,700italic"
       rel="stylesheet"
     />
-    <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#0faf99" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:name" content="CurrencySwap" />
@@ -30,7 +29,7 @@
     />
     <meta
       property="og:image"
-      content="https://gabrielbolarinwa-currencyswap.vercel.app/public/image.png"
+      content="https://gabrielbolarinwa-currencyswap.vercel.app/image.png"
     />
     <meta
       content="https://gabrielbolarinwa-currencyswap.vercel.app"
@@ -41,8 +40,8 @@
     <meta content="IE=edge" http-equiv="X-UA-Compatible" />
     <meta content="text/html;charset=UTF-8" http-equiv="Content-Type" />
     <meta content="website" property="og:type" />
-    <link rel="icon" href="public/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <!--[if lt IE 7]>
@@ -54,7 +53,7 @@
     <header>
       <div class="brand">
         <img
-          src="public/currencyswap.webp"
+          src="/currencyswap.webp"
           alt="Currency Swap Logo"
           width="50"
           height="50"
@@ -177,13 +176,6 @@
       </section>
     </main>
     <div class="toastBox" id="toastBox" aria-live="polite"></div>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-      lucide.createIcons();
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js");
-      }
-    </script>
-    <script type="module" src="js/script.js" defer></script>
+    <script type="module" src="/src/script.js" defer></script>
   </body>
 </html>

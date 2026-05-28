@@ -1,4 +1,22 @@
+import {
+  ArrowDownUp,
+  CircleAlert,
+  CircleCheck,
+  CircleX,
+  createIcons,
+  RotateCw,
+  SunMoon,
+} from "lucide";
 import { countryList } from "./codes.js";
+
+createIcons({
+  icons: {
+    SunMoon,
+    ArrowDownUp,
+    RotateCw,
+  },
+});
+
 const apiURL = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies`;
 
 const dropdowns = document.querySelectorAll(".currencySelect");
@@ -280,7 +298,7 @@ function swapCurrencies() {
 
 function showToast(message, id) {
   toastBox.style.transform = "scaleX(1)";
-
+  let icon;
   let toast = document.createElement("div");
   toast.classList.add("toast");
   toast.role = "alert";
@@ -292,18 +310,25 @@ function showToast(message, id) {
     toast.ariaLabel = "error";
     toast.classList.add("error");
     messageIcon.dataset.lucide = "circle-x";
+    icon = CircleX;
   } else if (id === "success") {
     toast.ariaLabel = "succes";
     toast.classList.add("success");
     messageIcon.dataset.lucide = "circle-check";
+    icon = CircleCheck;
   } else if (id === "warning") {
     toast.ariaLabel = "Warning";
     toast.classList.add("invalid");
     messageIcon.dataset.lucide = "circle-alert";
+    icon = CircleAlert;
   }
   toast.append(messageIcon, messageText);
   toastBox.appendChild(toast);
-  lucide.createIcons();
+  createIcons({
+    icons: {
+      icon,
+    },
+  });
   setTimeout(() => {
     toast.remove();
     toastBox.style.transform = "scaleX(0)";

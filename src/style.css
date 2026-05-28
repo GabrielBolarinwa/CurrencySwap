@@ -592,7 +592,6 @@ button.refreshRates span {
 
 .toast .lucide {
   margin: 0 10px;
-  font-size: 1.25rem;
   color: var(--color-bg-primary);
   &.lucide-circle-check {
     fill: green;

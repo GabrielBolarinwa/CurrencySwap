@@ -301,8 +301,6 @@ function showToast(message, id) {
   setTimeout(() => {
     toastBox.style.transform = "scaleX(1)";
   }, 1000);
-
-  let icon;
   let toast = document.createElement("div");
   toast.classList.add("toast");
   toast.role = "alert";
@@ -310,27 +308,39 @@ function showToast(message, id) {
   let messageIcon = document.createElement("span");
   let messageText = document.createElement("span");
   messageText.textContent = message;
+  messageIcon.setAttribute("width", "32");
+  messageIcon.setAttribute("height", "32");
   if (id === "error") {
     toast.ariaLabel = "error";
     toast.classList.add("error");
     messageIcon.dataset.lucide = "circle-x";
-    icon = CircleX;
   } else if (id === "success") {
     toast.ariaLabel = "succes";
     toast.classList.add("success");
     messageIcon.dataset.lucide = "circle-check";
-    icon = CircleCheck;
   } else if (id === "warning") {
     toast.ariaLabel = "Warning";
     toast.classList.add("invalid");
     messageIcon.dataset.lucide = "circle-alert";
-    icon = CircleAlert;
   }
   toast.append(messageIcon, messageText);
   toastBox.appendChild(toast);
+  if (id === "error") {
+    createIcons({
+      icons: {
+        CircleX,
+      },
+    });
+  } else if (id === "success") {
+    createIcons({
+      icons: {
+        CircleCheck,
+      },
+    });
+  }
   createIcons({
     icons: {
-      icon,
+      CircleAlert,
     },
   });
   setTimeout(() => {

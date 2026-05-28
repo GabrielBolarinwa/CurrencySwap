@@ -32,6 +32,7 @@ const pairButtons = document.querySelectorAll(".pairs .pair-buttons");
 const swapCurrencyButton = document.getElementById("swapCurrency");
 const refreshRatesButton = document.getElementById("refreshRates");
 let success = 0;
+let fails = 0;
 let total = 0;
 async function init() {
   for (const select of dropdowns) {
@@ -62,7 +63,7 @@ async function init() {
         86400000
       ) {
         success = 0;
-        handleRateExchange(currCode, key);
+        await handleRateExchange(currCode, key);
       }
     } else {
       refreshRatesButton.children[0].classList.add("rotateLoader");
@@ -76,22 +77,18 @@ async function init() {
     }
     total++;
   }
-  success > 0 &&
-    showToast(
-      `${success} ${success > 1 ? "currencies" : "currency"} now available`,
-      "success",
-    );
 
+  success > 0 &&
+    showToast(`${success} out of ${total} currencies now available`, "success");
+  setTimeout(() => {
+    fails > 0 &&
+      showToast(
+        `Failed to get currency data for ${fails} currencies check your connection and try again`,
+        "error",
+      );
+  }, 6000);
   document.getElementById("totalCurrencies").textContent = total;
   for (const button of pairButtons) {
-    const pairRateText = button.querySelector("span");
-    const pairRate = getCachedRate(
-      pairRateText.dataset.from,
-      pairRateText.dataset.to,
-    );
-    if (pairRate) {
-      pairRateText.textContent = `${pairRate.toFixed(2)}`;
-    }
     button.addEventListener("click", () => {
       Array.from(fromCurr.options).map((option) => {
         if (option.value === pairRateText.dataset.from) {
@@ -135,59 +132,47 @@ navigator.onLine
 async function handleRateExchange(currCode, key) {
   try {
     const data = await fetchRates(currCode.toLowerCase());
-    if (data) {
+    if (data !== null) {
       localStorage.setItem(key, JSON.stringify(data));
       currencyData[currCode.toLowerCase()] = data;
       success++;
-    } else {
-      showToast(
-        `Failed to get currency data for ${currCode} check your connection and try again`,
-        "error",
-      );
     }
   } catch (err) {
     console.error("Failed to fetch rates for", currCode, err);
+    fails++;
   }
 }
 
-function getAllRates() {
+async function getAllRates() {
   success = 0;
+  fails = 0;
   const promises = [];
   for (let currCode in countryList) {
     if (!Object.hasOwn(countryList, currCode)) continue;
     const key = `currency-${currCode}`;
-    promises.push(handleRateExchange(currCode, key));
-    success++;
+    promises.push(await handleRateExchange(currCode, key));
   }
-  showToast(
-    `${success} ${success > 1 ? "currencies" : "currency"} now available`,
-    "success",
-  );
-  return Promise.all(promises);
+  Promise.all(promises);
+  success > 0 &&
+    showToast(
+      `${success} ${success > 1 ? "currencies" : "currency"} now available`,
+      "success",
+    );
+  setTimeout(() => {
+    fails > 0 &&
+      showToast(
+        `Failed to get currency data for ${fails} currencies check your connection and try again`,
+        "error",
+      );
+  }, 6000);
 }
 
 async function fetchRates(currCode) {
-  try {
-    const response = await fetch(`${apiURL}/${currCode}.json`, {
-      method: "GET",
-      cache: "no-cache",
-    });
-    if (response.ok && response.status === 200) {
-      return await response.json();
-    } else {
-      showToast(
-        `Problem getting currency ${currCode.toUpperCase()} rates, please retry`,
-        "warning",
-      );
-      return null;
-    }
-  } catch (error) {
-    showToast(
-      `Failed to get currency data for ${currCode.toUpperCase()} check your connection and try again`,
-      "error",
-    );
-    console.error("Fetch error:", error);
-    throw new Error(error);
+  const response = await fetch(`${apiURL}/${currCode}.json`);
+  if (response.ok && response.status === 200) {
+    return await response.json();
+  } else {
+    throw new Error("Failed to fetch data");
   }
 }
 
@@ -219,7 +204,21 @@ function getExchangeRate() {
       "Exchange rate not available, please connect to the internet and try again.",
       "error",
     );
+
+    display.innerText = `Error`;
+    msgToText.textContent = `Error`;
+    msgFromText.textContent = `Error`;
     return;
+  }
+  for (const button of pairButtons) {
+    const pairRateText = button.querySelector("span");
+    const pairRate = getCachedRate(
+      pairRateText.dataset.from,
+      pairRateText.dataset.to,
+    );
+    if (pairRate) {
+      pairRateText.textContent = `${pairRate.toFixed(2)}`;
+    }
   }
   const finalAmount = amount.value * rate;
   const singleToCurrency = 1 * getCachedRate(fromCode, toCode);
@@ -297,7 +296,10 @@ function swapCurrencies() {
 }
 
 function showToast(message, id) {
-  toastBox.style.transform = "scaleX(1)";
+  setTimeout(() => {
+    toastBox.style.transform = "scaleX(1)";
+  }, 1000);
+
   let icon;
   let toast = document.createElement("div");
   toast.classList.add("toast");

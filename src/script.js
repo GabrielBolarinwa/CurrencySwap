@@ -90,6 +90,8 @@ async function init() {
   document.getElementById("totalCurrencies").textContent = total;
   for (const button of pairButtons) {
     button.addEventListener("click", () => {
+      const pairRateText = button.querySelector("span");
+
       Array.from(fromCurr.options).map((option) => {
         if (option.value === pairRateText.dataset.from) {
           option.selected = true;
